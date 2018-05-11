@@ -8,7 +8,7 @@ trait Compressor {
         case Single(e) if e != a => comp :+ Single(a)
         case Single(e) => comp.init :+ Repeat(count = 2, a)
         case Repeat(_, e) if e != a => comp :+ Single(a)
-        case Repeat(n, e) => comp.init :+ Repeat(n + 1, a)
+        case Repeat(n, e) => comp.init :+ Repeat(n + 1, e)
       } getOrElse {
         Seq(Single(a))
       }

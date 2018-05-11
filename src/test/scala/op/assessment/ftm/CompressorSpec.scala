@@ -29,4 +29,38 @@ class CompressorSpec  extends FunSuite with Compressor {
       Array(Repeat(3, "A"), Single("B"), Repeat(2, "C"))
     )
   }
+
+  test("decompress empty") {
+    assert(decompress(Array.empty[Compressed[String]]).isEmpty)
+  }
+
+  test("decompress single") {
+    assert(decompress(Array(Single("A"))) === Array("A"))
+  }
+
+  test("decompress repeated") {
+    assert(decompress(Array(Repeat(3, "A"))) ===
+      Array("A", "A", "A"))
+  }
+
+  test("decompress many single") {
+    assert(decompress(
+      Array(Single("A"), Single("B"), Single("C"))) ===
+      Array("A", "B", "C")
+    )
+  }
+
+  test("decompress  mixed") {
+    assert(decompress(
+      Array(Repeat(3, "A"), Single("B"), Repeat(2, "C"))) ===
+      Array("A", "A", "A", "B", "C", "C")
+    )
+  }
+
+  test("compress-decompress") {
+    val items =  Array("A", "A", "A", "B", "C", "C")
+    assert(
+      (compress[String] _ andThen decompress)(items) === items
+    )
+  }
 }
