@@ -1,7 +1,7 @@
 package op.assessment.ftm
 
 import akka.actor.{Actor, ActorRef}
-import op.assessment.ftm.CacheActor.Items
+import op.assessment.ftm.CacheActor.UpdateCache
 import op.assessment.ftm.FetchActor.Fetch
 
 object FetchActor {
@@ -26,7 +26,7 @@ trait FetchActor extends Actor with ItemsFetcher {
   val receive: Receive = {
     case Fetch =>
       val fetched = fetchCompressed()
-      cacheActor ! Items(fetched)
+      cacheActor ! UpdateCache(fetched)
   }
 }
 
