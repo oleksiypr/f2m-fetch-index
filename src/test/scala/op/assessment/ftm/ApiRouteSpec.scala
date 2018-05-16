@@ -41,7 +41,7 @@ class ApiRouteSpec extends WordSpec
       }
     }
 
-    "return 404 not found" in {
+    "return 404 Not found" in {
       val request: HttpRequest = Get("/12")
 
       request ~> routes ~> check {

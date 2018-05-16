@@ -1,10 +1,16 @@
 package op.assessment.ftm
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Props}
 import op.assessment.ftm.CacheActor.UpdateCache
 import op.assessment.ftm.FetchActor.Fetch
+import scala.concurrent.duration.{FiniteDuration, _}
 
 object FetchActor {
+
+  def props(cacheActor: ActorRef): Props = Props(
+    new NetworkFetchActor(cacheActor)
+  )
+
   case object Fetch
 }
 
@@ -21,7 +27,20 @@ trait NetworkItemsFetcher extends ItemsFetcher {
 
 trait FetchActor extends Actor with ItemsFetcher {
 
+  import context.dispatcher
+
   val cacheActor: ActorRef
+
+  override def preStart(): Unit = {
+    context.system.scheduler.schedule(0.seconds, interval) {
+      self ! Fetch
+    }
+  }
+
+  val interval: FiniteDuration = {
+    val config = context.system.settings.config
+    config.getDouble("fetch.interval.seconds")
+  }.seconds
 
   val receive: Receive = {
     case Fetch =>
