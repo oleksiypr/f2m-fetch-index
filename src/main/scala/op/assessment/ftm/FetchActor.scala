@@ -7,6 +7,7 @@ import op.assessment.ftm.CacheActor.UpdateCache
 import op.assessment.ftm.FetchActor.Fetch
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 object FetchActor {
 
@@ -18,15 +19,13 @@ object FetchActor {
 }
 
 trait ItemsFetcher extends Compressor {
-  def fetch(): Seq[String]
-  def fetchCompressed(): Seq[Compressed[String]] = {
-    compress(fetch())
-  }
+  def fetch(): Try[Seq[String]]
+  def fetchCompressed(): Try[Seq[Compressed[String]]] = fetch().map(compress)
 }
 
 trait NetworkItemsFetcher extends ItemsFetcher {
   val url: URL
-  override def fetch(): Seq[String] = {
+  override def fetch(): Try[Seq[String]] = Try {
     Source.fromURL(url).getLines().toSeq
   }
 }
@@ -52,9 +51,12 @@ trait FetchActor extends Actor with ItemsFetcher {
 
   val receive: Receive = {
     case Fetch =>
-      val fetched = fetchCompressed()
-      log.debug("Fetched")
-      cacheActor ! UpdateCache(fetched)
+      fetchCompressed() match {
+        case Success(fetched) =>
+          log.debug("Fetched")
+          cacheActor ! UpdateCache(fetched)
+        case Failure(th) => log.error(th, "Failed to fetch")
+      }
   }
 }
 

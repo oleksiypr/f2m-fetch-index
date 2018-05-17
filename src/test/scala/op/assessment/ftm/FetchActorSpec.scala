@@ -6,6 +6,7 @@ import op.assessment.ftm.CacheActor.UpdateCache
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
 
 object FetchActorSpec {
 
@@ -15,16 +16,26 @@ object FetchActorSpec {
     }
   }
 
-  trait FakeItemsFetcher extends ItemsFetcher with FakeCompressor {
-    override def fetch(): Seq[String] = List("A", "B", "C")
+  trait FakeItemsFetcherSuccess extends ItemsFetcher with FakeCompressor {
+    override def fetch(): Try[Seq[String]] = Success(List("A", "B", "C"))
+  }
+
+  trait FakeItemsFetcherFailure extends ItemsFetcher with FakeCompressor {
+    override def fetch(): Try[Seq[String]] = Failure {
+      new RuntimeException("Test exception")
+    }
   }
 
   class TestFetchActor(
       override val cacheActor: ActorRef
-    ) extends FetchActor with FakeItemsFetcher
+    ) extends FetchActor with FakeItemsFetcherSuccess
 
-  def props(cacheActor: ActorRef): Props = {
-    Props(new TestFetchActor(cacheActor))
+  class FailingFetchActor(
+      override val cacheActor: ActorRef
+    ) extends FetchActor with FakeItemsFetcherFailure
+
+  def props(cacheActor: ActorRef)(fa: ActorRef => FetchActor): Props = {
+    Props(fa(cacheActor))
   }
 }
 
@@ -42,7 +53,7 @@ class FetchActorSpec(_system: ActorSystem) extends TestKit(_system)
   "FetchActor" should {
     "fetch every 1 second and send data to CacheActor" in {
       val probe = TestProbe()
-      system.actorOf(props(cacheActor = probe.ref))
+      system.actorOf(props(cacheActor = probe.ref)(new TestFetchActor(_)))
 
       val fetched = List(Single("A"), Single("B"), Single("C"))
       val update = UpdateCache(fetched)
@@ -53,6 +64,11 @@ class FetchActorSpec(_system: ActorSystem) extends TestKit(_system)
       )
 
       probe.expectNoMessage(0.4 seconds)
+    }
+    "handle fetch errors" in {
+      val probe = TestProbe()
+      system.actorOf(props(cacheActor = probe.ref)(new FailingFetchActor(_)))
+      probe.expectNoMessage()
     }
   }
 }
