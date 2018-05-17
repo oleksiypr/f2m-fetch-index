@@ -1,5 +1,9 @@
 package op.assessment.ftm
 
+sealed trait Compressed[+A]
+case class Single[A](element: A) extends Compressed[A]
+case class Repeat[A](count: Int, element: A) extends Compressed[A]
+
 trait Compressor {
 
   def compress[A](as: Seq[A]): Seq[Compressed[A]] = {
@@ -22,7 +26,3 @@ trait Compressor {
     }
   }
 }
-
-sealed trait Compressed[+A]
-case class Single[A](element: A) extends Compressed[A]
-case class Repeat[A](count: Int, element: A) extends Compressed[A]

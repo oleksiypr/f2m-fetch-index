@@ -1,6 +1,7 @@
 package op.assessment.ftm
 
 import akka.actor.{Actor, Props}
+import akka.event.Logging
 import op.assessment.ftm.CacheActor._
 
 object CacheActor {
@@ -21,6 +22,8 @@ object CacheActor {
 
 class CacheActor extends Actor with Compressor {
 
+  val log = Logging(context.system, this)
+
   var cache: Seq[Compressed[String]] = Seq.empty
 
   val receive: Receive = {
@@ -32,6 +35,8 @@ class CacheActor extends Actor with Compressor {
         sender ! ItemFound(decompressed(index))
       }
 
-    case UpdateCache(values) => cache = values
+    case UpdateCache(values) =>
+      cache = values
+      log.debug("Cache updated")
   }
 }
