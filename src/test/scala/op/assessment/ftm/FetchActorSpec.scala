@@ -4,7 +4,6 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import op.assessment.ftm.CacheActor.UpdateCache
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -36,7 +35,7 @@ class FetchActorSpec(_system: ActorSystem) extends TestKit(_system)
 
   import FetchActorSpec._
 
-  override def afterAll {
+  override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
 

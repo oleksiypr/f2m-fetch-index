@@ -27,20 +27,19 @@ trait NetworkItemsFetcher extends ItemsFetcher {
 
 trait FetchActor extends Actor with ItemsFetcher {
 
-  import context.dispatcher
-
   val cacheActor: ActorRef
-
-  override def preStart(): Unit = {
-    context.system.scheduler.schedule(0.seconds, interval) {
-      self ! Fetch
-    }
-  }
 
   val interval: FiniteDuration = {
     val config = context.system.settings.config
     config.getDouble("fetch.interval.seconds")
   }.seconds
+
+  override def preStart(): Unit = {
+    import context.dispatcher
+    context.system.scheduler.schedule(0.seconds, interval) {
+      self ! Fetch
+    }
+  }
 
   val receive: Receive = {
     case Fetch =>
