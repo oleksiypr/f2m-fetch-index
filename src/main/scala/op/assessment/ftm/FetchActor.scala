@@ -26,7 +26,7 @@ trait ItemsFetcher extends Compressor {
 trait NetworkItemsFetcher extends ItemsFetcher {
   val url: URL
   override def fetch(): Try[Seq[String]] = Try {
-    Source.fromURL(url).getLines().toSeq
+    Source.fromURL(url).getLines().toVector
   }
 }
 

@@ -21,8 +21,8 @@ trait Compressor {
 
   def decompress[A](as: Seq[Compressed[A]]): Seq[A] = {
     as flatMap {
-      case Single(e) => Seq(e)
-      case Repeat(n, e) => Seq.fill(n)(e)
+      case Single(e) => Vector(e)
+      case Repeat(n, e) => Vector.fill(n)(e)
     }
   }
 }
