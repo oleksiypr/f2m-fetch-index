@@ -25,7 +25,7 @@ trait ItemsFetcher extends Compressor {
 
 trait NetworkItemsFetcher extends ItemsFetcher {
   val url: URL
-  override def fetch(): Try[Seq[String]] = Try {
+  override def fetch() = Try {
     Source.fromURL(url).getLines().toVector
   }
 }
@@ -53,7 +53,7 @@ trait FetchActor extends Actor with ItemsFetcher {
     case Fetch =>
       fetchCompressed() match {
         case Success(fetched) =>
-          log.debug("Fetched")
+          log.debug(s"Fetched and compressed to size: ${fetched.size}")
           cacheActor ! UpdateCache(fetched)
         case Failure(th) => log.error(th, "Failed to fetch")
       }

@@ -33,19 +33,46 @@ class CacheActorSpec(_system: ActorSystem) extends TestKit(_system)
       cacheActor ! GetItem(0)
       expectMsg(ItemNotFound)
 
-      val items = Vector(Single("A"), Single("B"), Single("C"))
+      val items = Vector(
+        Repeat(3, "A"),
+        Repeat(2, "B"),
+        Single("C"),
+        Single("D"),
+        Repeat(2, "E"))
+
       cacheActor ! UpdateCache(items)
 
       cacheActor ! GetItem(0)
       expectMsg(ItemFound("A"))
 
       cacheActor ! GetItem(1)
-      expectMsg(ItemFound("B"))
+      expectMsg(ItemFound("A"))
 
       cacheActor ! GetItem(2)
-      expectMsg(ItemFound("C"))
+      expectMsg(ItemFound("A"))
 
       cacheActor ! GetItem(3)
+      expectMsg(ItemFound("B"))
+
+      cacheActor ! GetItem(4)
+      expectMsg(ItemFound("B"))
+
+      cacheActor ! GetItem(5)
+      expectMsg(ItemFound("C"))
+
+      cacheActor ! GetItem(6)
+      expectMsg(ItemFound("D"))
+
+      cacheActor ! GetItem(6)
+      expectMsg(ItemFound("D"))
+
+      cacheActor ! GetItem(7)
+      expectMsg(ItemFound("E"))
+
+      cacheActor ! GetItem(8)
+      expectMsg(ItemFound("E"))
+
+      cacheActor ! GetItem(9)
       expectMsg(ItemNotFound)
     }
 
