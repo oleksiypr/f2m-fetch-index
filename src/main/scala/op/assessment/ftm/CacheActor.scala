@@ -19,7 +19,7 @@ object CacheActor {
   final case class ItemFound(item: String) extends QueryResult
   final case object ItemNotFound extends QueryResult
 
-  case class Cache[A](compressed: Vector[Compressed[A]]) {
+  final case class Cache[A](compressed: Vector[Compressed[A]]) {
 
     private[this] val ns = (compressed map {
       case Repeat(n, _) => n
